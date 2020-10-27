@@ -3,6 +3,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.views.generic import DetailView, ListView, FormView
 from django.contrib.auth.views import LoginView, LogoutView
 
+from shop.forms import SignUpForm
 from shop.models import Product, Purchase, Return
 from django.contrib.auth import get_user_model
 
@@ -14,7 +15,7 @@ class UserLogin(LoginView):
 
 
 class Register(FormView):
-    form_class = UserCreationForm
+    form_class = SignUpForm
     success_url = "/login/"
     template_name = "register.html"
 
