@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card-body">
+    <h4>Return List</h4>
+    <table class="table">
+        <thead>
+            <tr>
+                <th scope="col">Title</th>
+                <th scope="col">Count</th>
+                <th scope="col">Cost</th>
+                <th scope="col">user</th>
+                <th scope="col">created at</th>
+                <th scope="col">Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for return in return_list %}
+            <tr>
+                <td>{{ return.purchase.product.title }} ({{ return.purchase.product.real_price }})</td>
+                <td>{{ return.purchase.count }}</td>
+                <td>{{ return.purchase.cost }}</td>
+                <td>{{ return.purchase.user.full_name }}</td>
+                <td>{{ return.created_at }}</td>
+                <td><a type="button" class="btn btn-success" href="/purchase-allow/{{ purchase.id }}">Allow</a>
+                    <a type="button" class="btn btn-danger" href="/purchase-disallow/{{ purchase.id }}">Disallow</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{#    <a type="button" class="btn btn-success" href="{%url 'book-create' %}">Create</a>#}
+</div>
+{% endblock %}

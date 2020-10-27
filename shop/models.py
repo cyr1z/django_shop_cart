@@ -1,6 +1,8 @@
 from django.utils import timezone
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+
+
 # Create your models here.
 
 
@@ -13,6 +15,10 @@ class ShopUser(AbstractUser):
     purse = models.PositiveIntegerField(
         default=1000000
     )
+
+    @property
+    def real_purse(self):
+        return self.purse / 100
 
     class Meta:
         ordering = ["first_name", "last_name"]
@@ -41,31 +47,23 @@ class Product(models.Model):
         blank=True
     )
     image = models.ImageField(
-        upload_to='products_images',
+        upload_to='static/products_images',
         null=True,
         blank=True
     )
     price = models.PositiveIntegerField(
         default=0
     )
-    stock_count = models.PositiveIntegerField(
+    count = models.PositiveIntegerField(
         default=0
     )
 
-#     Category = models.ManyToManyField(
-#         Category,
-#         null=True,
-#         related_name='products'
-#     )
-#
-#
-# class Category(models.Model):
-#     """
-#     Category
-#     """
-#     title = models.CharField(
-#         max_length=120
-#     )
+    @property
+    def real_price(self):
+        return '$' + "{:.2f}".format(self.price / 100)
+
+    def __str__(self):
+        return f'{self.title} / Price: {self.real_price} / Count: {self.count}'
 
 
 class Purchase(models.Model):
@@ -91,6 +89,14 @@ class Purchase(models.Model):
         default=timezone.now
     )
 
+    @property
+    def cost(self):
+        return '$' + "{:.2f}".format((self.count * self.product.price) / 100)
+
+    def __str__(self):
+        return f'{self.product.title} / Cost: {self.cost} / Count:' \
+               f' {self.count} / User: {self.user.full_name}'
+
 
 class Return(models.Model):
     """
@@ -104,3 +110,11 @@ class Return(models.Model):
     created_at = models.DateField(
         default=timezone.now
     )
+
+    def __str__(self):
+        return f'{self.purchase.product.title} ' \
+               f'/ Cost: {self.purchase.cost} ' \
+               f'/ Count: {self.purchase.count} ' \
+               f'/ User: {self.purchase.user.full_name}' \
+               f'/ {self.created_at}'
+

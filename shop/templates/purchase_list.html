@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card-body">
+    <h4>Purchases List</h4>
+    <table class="table">
+        <thead>
+            <tr>
+                <th scope="col">Title</th>
+                <th scope="col">Count</th>
+                <th scope="col">Cost</th>
+                <th scope="col">user</th>
+                <th scope="col">created at</th>
+                <th scope="col">Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for purchase in purchase_list %}
+            <tr>
+                <td>{{ purchase.product.title }} ({{ purchase.product.real_price }})</td>
+                <td>{{ purchase.count }}</td>
+                <td>{{ purchase.cost }}</td>
+                <td>{{ purchase.user.full_name }}</td>
+                <td>{{ purchase.created_at }}</td>
+                <td>
+                    <a type="button" class="btn btn-danger" href="/purchase-return/{{ purchase.id }}">return</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{#    <a type="button" class="btn btn-success" href="{%url 'book-create' %}">Create</a>#}
+</div>
+{% endblock %}

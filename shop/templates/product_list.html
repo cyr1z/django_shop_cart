@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card-body">
+    <h4>Products List</h4>
+    <table class="table">
+        <thead>
+            <tr>
+                <th scope="col">Image</th>
+                <th scope="col">Title</th>
+                <th scope="col">Description</th>
+                <th scope="col">price</th>
+                <th scope="col">count</th>
+                {% if request.user.is_authenticated %}
+                <th scope="col">Action</th>
+                {% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for product in product_list %}
+            <tr>
+                <td><img src="{{product.image.url}}" alt="{{ product.title }}" height="200"></td>
+                <td>{{ product.title }}</td>
+                <td>{{ product.description }}</td>
+                <td>{{ product.real_price }}</td>
+                <td>{{ product.count }}</td>
+                {% if request.user.is_authenticated %}
+
+                <td>
+                 {% if request.user.is_superuser %}
+                     <a type="button" class="btn btn-danger" href="/product-edit/{{ product.id }}">Edit</a>
+                     {% else %}
+                    <a type="button" class="btn btn-warning" href="/product-buy/{{ product.id }}">Buy</a>
+
+                     {% endif  %}
+                </td>
+                 {% endif %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{#    <a type="button" class="btn btn-success" href="{%url 'book-create' %}">Create</a>#}
+</div>
+{% endblock %}
