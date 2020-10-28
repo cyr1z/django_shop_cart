@@ -1,7 +1,19 @@
 {% extends "base.html" %}
 {% block content %}
+{% load crispy_forms_tags%}
+{% load crispy_forms_field %}
+
 <div class="card-body">
-    <h4>Products List</h4>
+<div class="row">
+<div class="col-11">
+    <h4 >Products List</h4>
+</div>
+    <div class="col-1" style="padding-bottom: 5px">
+        {% if request.user.is_superuser %}
+    <a type="button" class="btn btn-success" href="{%url 'product_create' %}">Create</a>
+        {% endif %}
+    </div>
+</div>
     <table class="table">
         <thead>
             <tr>
@@ -18,26 +30,38 @@
         <tbody>
             {% for product in product_list %}
             <tr>
-                <td><img src="{{product.image.url}}" alt="{{ product.title }}" height="200"></td>
+                <td>{{ product.preview }}</td>
                 <td>{{ product.title }}</td>
                 <td>{{ product.description }}</td>
                 <td>{{ product.real_price }}</td>
-                <td>{{ product.count }}</td>
+                <td style="width: 8%">
+                    {% if request.user.is_superuser or not request.user.is_authenticated%}
+                        {{ product.count }}
+                    {% else %}
+                        <form method="POST" action="{% url 'buy' %}">
+                        {{ form.count|as_crispy_field }}
+                        <input type="hidden" name="product_id" value="{{ product.id }}">
+                        {% csrf_token %}
+
+
+
+                    {% endif %}
+                </td>
                 {% if request.user.is_authenticated %}
 
                 <td>
                  {% if request.user.is_superuser %}
-                     <a type="button" class="btn btn-danger" href="/product-edit/{{ product.id }}">Edit</a>
+                     <a type="button" class="btn btn-danger" href="/product_edit/{{ product.id }}">Edit</a>
                      {% else %}
-                    <a type="button" class="btn btn-warning" href="/product-buy/{{ product.id }}">Buy</a>
-
+                    <button type="submit" class="btn btn-warning" >Buy</button>
+                    </form>
                      {% endif  %}
+
                 </td>
                  {% endif %}
             </tr>
             {% endfor %}
         </tbody>
     </table>
-{#    <a type="button" class="btn btn-success" href="{%url 'book-create' %}">Create</a>#}
 </div>
 {% endblock %}

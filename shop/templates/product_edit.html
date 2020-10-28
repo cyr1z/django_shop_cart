@@ -1,11 +1,14 @@
 {% extends "base.html" %}
 {% block content %}
+{% load crispy_forms_tags %}
+
 <div class="card-body">
     <h5>Product</h5>
+    <div>{{ preview }}</div>
     <form method="post">
         {% csrf_token %}
-        {{form.as_p}}
-        <a type="button" class="btn btn-danger" href="{%url 'product-list' %}">Cancel</a>
+         {{ form|crispy }}
+
         <button type="submit" class="btn btn-success">Save</button>
     </form>
 </div>

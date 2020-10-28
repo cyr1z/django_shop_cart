@@ -1,9 +1,7 @@
 from django.utils import timezone
 from django.db import models
 from django.contrib.auth.models import AbstractUser
-
-
-# Create your models here.
+from django.utils.safestring import mark_safe
 
 
 class ShopUser(AbstractUser):
@@ -18,7 +16,7 @@ class ShopUser(AbstractUser):
 
     @property
     def real_purse(self):
-        return self.purse / 100
+        return '$' + "{:.2f}".format(self.purse / 100)
 
     class Meta:
         ordering = ["first_name", "last_name"]
@@ -62,6 +60,12 @@ class Product(models.Model):
     def real_price(self):
         return '$' + "{:.2f}".format(self.price / 100)
 
+    @property
+    def preview(self):
+        img_url = self.image.url
+        img_string = f'<img src="{img_url}" alt="{self.title}" height="200">'
+        return mark_safe(img_string)
+
     def __str__(self):
         return f'{self.title} / Price: {self.real_price} / Count: {self.count}'
 
@@ -97,6 +101,16 @@ class Purchase(models.Model):
         return f'{self.product.title} / Cost: {self.cost} / Count:' \
                f' {self.count} / User: {self.user.full_name}'
 
+    def save(self, *args, **kwargs):
+        if self.count <= self.product.count:
+            self.user.purse -= self.count * self.product.price
+            self.product.count -= self.count
+            self.user.save()
+            self.product.save()
+        else:
+            raise ValueError('not enough products for order')
+        super(Purchase, self).save(*args, **kwargs)
+
 
 class Return(models.Model):
     """
@@ -117,4 +131,3 @@ class Return(models.Model):
                f'/ Count: {self.purchase.count} ' \
                f'/ User: {self.purchase.user.full_name}' \
                f'/ {self.created_at}'
-
