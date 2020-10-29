@@ -21,8 +21,9 @@
                 <td>{{ return.purchase.cost }}</td>
                 <td>{{ return.purchase.user.full_name }}</td>
                 <td>{{ return.created_at }}</td>
-                <td><a type="button" class="btn btn-success" href="/purchase-allow/{{ purchase.id }}">Allow</a>
-                    <a type="button" class="btn btn-danger" href="/purchase-disallow/{{ purchase.id }}">Disallow</a>
+                <td>
+                    <a type="button" class="btn btn-success" href="/return_approve/{{ return.id }}">Allow</a>
+                    <a type="button" class="btn btn-danger" href="/return_cancel/{{ return.id }}">Disallow</a>
                 </td>
             </tr>
             {% endfor %}

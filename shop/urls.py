@@ -2,7 +2,7 @@ from django.urls import path
 
 from shop.views import ProductDetailView, ProductListView, PurchaseListView, \
     ReturnListView, UserLogin, UserLogout, Register, ProductCreate, \
-    PurchaseCreate, ProductUpdate
+    PurchaseCreate, ProductUpdate, ReturnApprove, ReturnCancel
 
 urlpatterns = [
     path('', ProductListView.as_view(), name='products'),
@@ -19,4 +19,8 @@ urlpatterns = [
     path('buy/', PurchaseCreate.as_view(), name='buy'),
     path('product_edit/<int:pk>/', ProductUpdate.as_view(),
          name='product_edit'),
+path('return_approve/<int:pk>/', ReturnApprove.as_view(),
+     name='return_approve'),
+path('return_cancel/<int:pk>/', ReturnCancel.as_view(),
+     name='return_cancel'),
 ]

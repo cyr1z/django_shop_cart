@@ -94,6 +94,10 @@ class Purchase(models.Model):
     )
 
     @property
+    def cost_in_cents(self):
+        return self.count * self.product.price
+
+    @property
     def cost(self):
         return '$' + "{:.2f}".format((self.count * self.product.price) / 100)
 

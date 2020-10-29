@@ -1,5 +1,7 @@
+from django.http import HttpResponseRedirect
 from django.utils.safestring import mark_safe
-from django.views.generic import DetailView, ListView, CreateView, UpdateView
+from django.views.generic import DetailView, ListView, CreateView,\
+    UpdateView, DeleteView
 from django.contrib.auth.views import LoginView, LogoutView
 
 from shop.forms import SignUpForm, ProductCreateForm, PurchaseCreateForm
@@ -91,3 +93,59 @@ class PurchaseCreate(CreateView):
         self.success_url = f"/purchases/{self.request.user.id}"
         purchase.save()
         return super().form_valid(form=form)
+
+
+class ReturnCreate(CreateView):
+    # form_class = ReturnCreateForm
+    model = Return
+    success_url = '/'
+
+    # def form_valid(self, form):
+    #     p_return = form.save(commit=False)
+    #     product = Product.objects.get(id=self.request.POST.get('product_id'))
+    #     purchase.product = product
+    #     purchase.user = self.request.user
+    #     self.success_url = f"/purchases/{self.request.user.id}"
+    #     purchase.save()
+    #     return super().form_valid(form=form)
+
+
+class ReturnApprove(DeleteView):
+    model = Return
+    template_name = 'base.html'
+    success_url = '/returns/'
+
+    def delete(self, request, *args, **kwargs):
+        """
+        Call the delete() method on the fetched object and then redirect to the
+        success URL.
+        """
+        purchase_return = self.get_object()
+        purchase = purchase_return.purchase
+        user = purchase.user
+        user.purse += purchase.cost_in_cents
+        product = purchase.product
+        product.count += purchase.count
+        user.save()
+        product.save()
+        purchase.delete()
+        purchase_return.delete()
+        return HttpResponseRedirect(self.success_url)
+
+    def get(self, request, *args, **kwargs):
+        if self.request.user.is_superuser:
+            return self.delete(request, *args, **kwargs)
+        else:
+            return HttpResponseRedirect('/')
+
+
+class ReturnCancel(DeleteView):
+    model = Return
+    template_name = 'base.html'
+    success_url = '/returns/'
+
+    def get(self, request, *args, **kwargs):
+        if self.request.user.is_superuser:
+            return self.delete(request, *args, **kwargs)
+        else:
+            return HttpResponseRedirect('/')
