@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.forms import ModelForm
 
-from shop.models import ShopUser, Product, Purchase
+from shop.models import ShopUser, Product, Purchase, Return
 
 
 class SignUpForm(UserCreationForm):
@@ -34,3 +34,9 @@ class PurchaseCreateForm(ModelForm):
     class Meta:
         model = Purchase
         fields = ['count', ]
+
+
+class ReturnCreateForm(ModelForm):
+    class Meta:
+        model = Return
+        fields = []

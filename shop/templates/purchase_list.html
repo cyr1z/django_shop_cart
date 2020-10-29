@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 {% block content %}
+    {% load crispy_forms_tags%}
+{% load crispy_forms_field %}
 <div class="card-body">
     <h4>Purchases List</h4>
     <table class="table">
@@ -22,7 +24,12 @@
                 <td>{{ purchase.user.full_name }}</td>
                 <td>{{ purchase.created_at }}</td>
                 <td>
-                    <a type="button" class="btn btn-danger" href="/purchase-return/{{ purchase.id }}">return</a>
+                    <form method="POST" action="{% url 'return' %}">
+                        {% csrf_token %}
+                        {{ form|crispy }}
+                        <input type="hidden" name="purchase_id" value="{{ purchase.id }}">
+                        <button type="submit" class="btn btn-danger" >return</button>
+                    </form>
                 </td>
             </tr>
             {% endfor %}

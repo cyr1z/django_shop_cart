@@ -1,10 +1,12 @@
 from django.http import HttpResponseRedirect
+from django.shortcuts import redirect
 from django.utils.safestring import mark_safe
 from django.views.generic import DetailView, ListView, CreateView,\
     UpdateView, DeleteView
 from django.contrib.auth.views import LoginView, LogoutView
 
-from shop.forms import SignUpForm, ProductCreateForm, PurchaseCreateForm
+from shop.forms import SignUpForm, ProductCreateForm, PurchaseCreateForm, \
+    ReturnCreateForm
 from shop.models import Product, Purchase, Return
 
 
@@ -72,6 +74,11 @@ class PurchaseListView(ListView):
     def get_queryset(self):
         return Purchase.objects.filter(user=self.request.user)
 
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(object_list=object_list, **kwargs)
+        context.update({'form': ReturnCreateForm})
+        return context
+
 
 class ReturnListView(ListView):
     model = Return
@@ -87,7 +94,8 @@ class PurchaseCreate(CreateView):
 
     def form_valid(self, form):
         purchase = form.save(commit=False)
-        product = Product.objects.get(id=self.request.POST.get('product_id'))
+        product_id = self.request.POST.get('product_id')
+        product = Product.objects.get(id=product_id)
         purchase.product = product
         purchase.user = self.request.user
         self.success_url = f"/purchases/{self.request.user.id}"
@@ -96,18 +104,20 @@ class PurchaseCreate(CreateView):
 
 
 class ReturnCreate(CreateView):
-    # form_class = ReturnCreateForm
+    form_class = ReturnCreateForm
     model = Return
     success_url = '/'
+    # fields = ['purchase']
 
-    # def form_valid(self, form):
-    #     p_return = form.save(commit=False)
-    #     product = Product.objects.get(id=self.request.POST.get('product_id'))
-    #     purchase.product = product
-    #     purchase.user = self.request.user
-    #     self.success_url = f"/purchases/{self.request.user.id}"
-    #     purchase.save()
-    #     return super().form_valid(form=form)
+    def form_valid(self, form):
+        # context = self.get_context_data(form=form)
+        purchase_return = form.save(commit=False)
+        purchase_id = self.request.POST.get('purchase_id')
+        purchase = Purchase.objects.get(id=purchase_id)
+        purchase_return.purchase = purchase
+        purchase_return.save()
+        return super().form_valid(form=form)
+        # return redirect(self.get_success_url())
 
 
 class ReturnApprove(DeleteView):
