@@ -1,7 +1,8 @@
+from datetime import datetime, timedelta
+from django.utils import timezone
 from django.http import HttpResponseRedirect
-from django.shortcuts import redirect
 from django.utils.safestring import mark_safe
-from django.views.generic import DetailView, ListView, CreateView,\
+from django.views.generic import DetailView, ListView, CreateView, \
     UpdateView, DeleteView
 from django.contrib.auth.views import LoginView, LogoutView
 
@@ -88,18 +89,41 @@ class ReturnListView(ListView):
 
 
 class PurchaseCreate(CreateView):
+    """
+    Create a purchase
+    """
     form_class = PurchaseCreateForm
     model = Purchase
     success_url = '/'
 
     def form_valid(self, form):
+        # change redirect url
+        self.success_url = f"/purchases/{self.request.user.id}"
+        # save form data to object, not to database
         purchase = form.save(commit=False)
+        # add  a selected product to object purchase
         product_id = self.request.POST.get('product_id')
         product = Product.objects.get(id=product_id)
         purchase.product = product
+        # add current user to object purchase
         purchase.user = self.request.user
-        self.success_url = f"/purchases/{self.request.user.id}"
-        purchase.save()
+        # Check if enough money and products
+        if purchase.count <= purchase.product.count:
+            if purchase.user.purse >= purchase.cost_in_cents:
+                # move money and product counts
+                purchase.user.purse -= purchase.cost_in_cents
+                purchase.product.count -= purchase.count
+                # saving changed objects
+                purchase.user.save()
+                purchase.product.save()
+                purchase.save()
+            else:
+                # Not enough money
+                pass
+        else:
+            # Not enough product
+            pass
+
         return super().form_valid(form=form)
 
 
@@ -107,22 +131,31 @@ class ReturnCreate(CreateView):
     form_class = ReturnCreateForm
     model = Return
     success_url = '/'
-    # fields = ['purchase']
 
     def form_valid(self, form):
-        # context = self.get_context_data(form=form)
+        # change redirect url
+        self.success_url = f"/purchases/{self.request.user.id}"
+        # save form data to object, not to database
         purchase_return = form.save(commit=False)
+        # get the purchase object
         purchase_id = self.request.POST.get('purchase_id')
         purchase = Purchase.objects.get(id=purchase_id)
+        # add the purchase to return object
         purchase_return.purchase = purchase
-        purchase_return.save()
-        return super().form_valid(form=form)
-        # return redirect(self.get_success_url())
+        # check purchase time not older of 3 minutes
+        purchase_time = purchase_return.purchase.created_at
+        now = timezone.now()
+        if now < purchase_time + timedelta(minutes=3):
+            # save object
+            purchase_return.save()
+            return super().form_valid(form=form)
+        else:
+            # Purchase too old. No return possible.
+            pass
 
 
 class ReturnApprove(DeleteView):
     model = Return
-    template_name = 'base.html'
     success_url = '/returns/'
 
     def delete(self, request, *args, **kwargs):

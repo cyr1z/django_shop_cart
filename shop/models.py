@@ -49,6 +49,7 @@ class Product(models.Model):
         null=True,
         blank=True
     )
+    # price in cents
     price = models.PositiveIntegerField(
         default=0
     )
@@ -56,6 +57,7 @@ class Product(models.Model):
         default=0
     )
 
+    # formatted price in dollars
     @property
     def real_price(self):
         return '$' + "{:.2f}".format(self.price / 100)
@@ -89,7 +91,7 @@ class Purchase(models.Model):
     count = models.PositiveIntegerField(
         default=0
     )
-    created_at = models.DateField(
+    created_at = models.DateTimeField(
         default=timezone.now
     )
 
@@ -97,6 +99,7 @@ class Purchase(models.Model):
     def cost_in_cents(self):
         return self.count * self.product.price
 
+    # formatter cost in dollars
     @property
     def cost(self):
         return '$' + "{:.2f}".format((self.count * self.product.price) / 100)
@@ -104,16 +107,6 @@ class Purchase(models.Model):
     def __str__(self):
         return f'{self.product.title} / Cost: {self.cost} / Count:' \
                f' {self.count} / User: {self.user.full_name}'
-
-    def save(self, *args, **kwargs):
-        if self.count <= self.product.count:
-            self.user.purse -= self.count * self.product.price
-            self.product.count -= self.count
-            self.user.save()
-            self.product.save()
-        else:
-            raise ValueError('not enough products for order')
-        super(Purchase, self).save(*args, **kwargs)
 
 
 class Return(models.Model):
