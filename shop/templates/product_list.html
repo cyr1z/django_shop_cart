@@ -1,67 +1,94 @@
 {% extends "base.html" %}
 {% block content %}
-{% load crispy_forms_tags%}
-{% load crispy_forms_field %}
+    {% load crispy_forms_tags %}
+    {% load crispy_forms_field %}
 
-<div class="card-body">
-<div class="row">
-<div class="col-11">
-    <h4 >Products List</h4>
-</div>
-    <div class="col-1" style="padding-bottom: 5px">
-        {% if request.user.is_superuser %}
-    <a type="button" class="btn btn-success" href="{%url 'product_create' %}">Create</a>
-        {% endif %}
-    </div>
-</div>
-    <table class="table">
-        <thead>
-            <tr>
-                <th scope="col">Image</th>
-                <th scope="col">Title</th>
-                <th scope="col">Description</th>
-                <th scope="col">price</th>
-                <th scope="col">count</th>
-                {% if request.user.is_authenticated %}
-                <th scope="col">Action</th>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-11">
+                <h4>Products List</h4>
+
+            </div>
+            <div class="col-1" style="padding-bottom: 5px">
+                {% if request.user.is_superuser %}
+                    <a type="button" class="btn btn-success"
+                       href="{% url 'create' %}">Create</a>
                 {% endif %}
-            </tr>
-        </thead>
-        <tbody>
-            {% for product in product_list %}
-            <tr>
-                <td>{{ product.preview }}</td>
-                <td>{{ product.title }}</td>
-                <td>{{ product.description }}</td>
-                <td>{{ product.real_price }}</td>
-                <td style="width: 8%">
-                    {% if request.user.is_superuser or not request.user.is_authenticated%}
-                        {{ product.count }}
-                    {% else %}
-                        <form method="POST" action="{% url 'buy' %}">
-                        {{ form.count|as_crispy_field }}
-                        <input type="hidden" name="product_id" value="{{ product.id }}">
-                        {% csrf_token %}
+            </div>
 
+        </div>
+        <div class="row">
 
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert col-12
+                            {% if message.tags %}
+                               {% if message.tags == 'error' %}
+                                    alert-danger
+                               {% else %}
+                                    alert-{{ message.tags }}
+                               {% endif %}
+                            {% endif %}">
+                        <strong>{{ message }}</strong>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        </div>
+        <div class="row">
 
+            <table class="table">
+                <thead>
+                <tr>
+                    <th scope="col">Image</th>
+                    <th scope="col">Title</th>
+                    <th scope="col">Description</th>
+                    <th scope="col">price</th>
+                    <th scope="col">count</th>
+                    {% if request.user.is_authenticated %}
+                        <th scope="col">Action</th>
                     {% endif %}
-                </td>
-                {% if request.user.is_authenticated %}
+                </tr>
+                </thead>
+                <tbody>
+                {% for product in product_list %}
+                    <tr>
+                        <td>{{ product.preview }}</td>
+                        <td>{{ product.title }}</td>
+                        <td>{{ product.description }}</td>
+                        <td>{{ product.real_price }}</td>
+                        <td style="width: 8%">
+                            {% if request.user.is_superuser or not request.user.is_authenticated %}
+                                {{ product.count }}
+                            {% else %}
+                                <form method="POST" action="{% url 'buy' %}">
+                                {{ form.count|as_crispy_field }}
+                                <div class="badge badge-primary">
+                                    available {{ product.count }}</div>
+                                <input type="hidden" name="product_id"
+                                       value="{{ product.id }}">
+                                {% csrf_token %}
+                            {% endif %}
+                        </td>
+                        {% if request.user.is_authenticated %}
 
-                <td>
-                 {% if request.user.is_superuser %}
-                     <a type="button" class="btn btn-danger" href="/product_edit/{{ product.id }}">Edit</a>
-                     {% else %}
-                    <button type="submit" class="btn btn-warning" >Buy</button>
-                    </form>
-                     {% endif  %}
+                            <td>
+                                {% if request.user.is_superuser %}
+                                    <a type="button" class="btn btn-danger"
+                                       href="/edit/{{ product.id }}">Edit</a>
+                                {% else %}
+                                    <button type="submit"
+                                            class="btn btn-warning">
+                                        Buy
+                                    </button>
+                                    </form>
+                                {% endif %}
 
-                </td>
-                 {% endif %}
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</div>
+                            </td>
+                        {% endif %}
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
 {% endblock %}

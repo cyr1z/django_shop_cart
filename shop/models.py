@@ -118,7 +118,7 @@ class Return(models.Model):
         on_delete=models.CASCADE,
         related_name='returns'
     )
-    created_at = models.DateField(
+    created_at = models.DateTimeField(
         default=timezone.now
     )
 

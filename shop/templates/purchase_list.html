@@ -1,11 +1,25 @@
 {% extends "base.html" %}
 {% block content %}
-    {% load crispy_forms_tags%}
-{% load crispy_forms_field %}
-<div class="card-body">
-    <h4>Purchases List</h4>
-    <table class="table">
-        <thead>
+    {% load crispy_forms_tags %}
+    {% load crispy_forms_field %}
+    <div class="card-body">
+        <h4>Purchases List</h4>
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert
+                    {% if message.tags %}
+                       {% if message.tags == 'error' %}
+                            alert-danger
+                       {% else %}
+                            alert-{{ message.tags }}
+                       {% endif %}
+                    {% endif %}">
+                    <strong>{{ message }}</strong>
+                </div>
+            {% endfor %}
+        {% endif %}
+        <table class="table">
+            <thead>
             <tr>
                 <th scope="col">Title</th>
                 <th scope="col">Count</th>
@@ -14,27 +28,31 @@
                 <th scope="col">created at</th>
                 <th scope="col">Action</th>
             </tr>
-        </thead>
-        <tbody>
+            </thead>
+            <tbody>
             {% for purchase in purchase_list %}
-            <tr>
-                <td>{{ purchase.product.title }} ({{ purchase.product.real_price }})</td>
-                <td>{{ purchase.count }}</td>
-                <td>{{ purchase.cost }}</td>
-                <td>{{ purchase.user.full_name }}</td>
-                <td>{{ purchase.created_at }}</td>
-                <td>
-                    <form method="POST" action="{% url 'return' %}">
-                        {% csrf_token %}
-                        {{ form|crispy }}
-                        <input type="hidden" name="purchase_id" value="{{ purchase.id }}">
-                        <button type="submit" class="btn btn-danger" >return</button>
-                    </form>
-                </td>
-            </tr>
+                <tr>
+                    <td>{{ purchase.product.title }}
+                        ({{ purchase.product.real_price }})
+                    </td>
+                    <td>{{ purchase.count }}</td>
+                    <td>{{ purchase.cost }}</td>
+                    <td>{{ purchase.user.full_name }}</td>
+                    <td>{{ purchase.created_at }}</td>
+                    <td>
+                        <form method="POST" action="{% url 'return' %}">
+                            {% csrf_token %}
+                            {{ form|crispy }}
+                            <input type="hidden" name="purchase_id"
+                                   value="{{ purchase.id }}">
+                            <button type="submit" class="btn btn-danger">
+                                return
+                            </button>
+                        </form>
+                    </td>
+                </tr>
             {% endfor %}
-        </tbody>
-    </table>
-{#    <a type="button" class="btn btn-success" href="{%url 'book-create' %}">Create</a>#}
-</div>
+            </tbody>
+        </table>
+    </div>
 {% endblock %}

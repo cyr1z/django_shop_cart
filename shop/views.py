@@ -1,8 +1,11 @@
-from datetime import datetime, timedelta
+from datetime import timedelta
+
+from django.contrib import messages
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.utils import timezone
 from django.http import HttpResponseRedirect
 from django.utils.safestring import mark_safe
-from django.views.generic import DetailView, ListView, CreateView, \
+from django.views.generic import ListView, CreateView, \
     UpdateView, DeleteView
 from django.contrib.auth.views import LoginView, LogoutView
 
@@ -12,93 +15,106 @@ from shop.models import Product, Purchase, Return
 
 
 class UserLogin(LoginView):
+    """ login """
     template_name = 'login.html'
 
 
 class Register(CreateView):
+    """ Sign UP """
     form_class = SignUpForm
     success_url = "/login/"
     template_name = "register.html"
 
-    def form_valid(self, form):
-        form.save()
-        return super(Register, self).form_valid(form)
 
-
-class UserLogout(LogoutView):
+class UserLogout(LoginRequiredMixin, LogoutView):
+    """ Logout """
     next_page = '/'
     redirect_field_name = 'next'
 
 
-class ProductDetailView(DetailView):
-    model = Product
-
-
 class ProductListView(ListView):
+    """
+    List of products
+    """
     model = Product
     paginate_by = 10
     template_name = 'product_list.html'
     queryset = Product.objects.all()
 
+    # Add form with "count" input and "Buy" button to list items
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(object_list=object_list, **kwargs)
         context.update({'form': PurchaseCreateForm})
         return context
 
 
-class ProductCreate(CreateView):
+class ProductCreate(LoginRequiredMixin, CreateView):
+    """
+    Create products. Only for administrators.
+    """
     model = Product
     template_name = 'product_edit.html'
     form_class = ProductCreateForm
     success_url = '/'
 
 
-class ProductUpdate(UpdateView):
+class ProductUpdate(LoginRequiredMixin, UpdateView):
+    """
+    Update products. Only for administrators.
+    """
     model = Product
     template_name = 'product_edit.html'
     success_url = '/'
     fields = ['image', 'title', 'description', 'price', 'count']
 
+    # add product image preview to context
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(object_list=object_list, **kwargs)
         img_url = self.object.image.url
-        img_string = mark_safe(f'<img src="{img_url}" height="200">')
-        context.update({'preview': img_string})
+        img_alt = self.object.title
+        img_string = f'<img src="{img_url}" alt="{img_alt}" height="200">'
+        context.update({'preview': mark_safe(img_string)})
         return context
 
 
-class PurchaseListView(ListView):
+class PurchaseListView(LoginRequiredMixin, ListView):
+    """
+    List of user purchases
+    """
     model = Purchase
     paginate_by = 10
     template_name = 'purchase_list.html'
 
+    # add user filter to queryset
     def get_queryset(self):
         return Purchase.objects.filter(user=self.request.user)
 
+    # add return creation form to context
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(object_list=object_list, **kwargs)
         context.update({'form': ReturnCreateForm})
         return context
 
 
-class ReturnListView(ListView):
+class ReturnListView(LoginRequiredMixin, ListView):
+    """
+    Returns list. Only for administrators.
+    """
     model = Return
     paginate_by = 10
     template_name = 'return_list.html'
     queryset = Return.objects.all()
 
 
-class PurchaseCreate(CreateView):
+class PurchaseCreate(LoginRequiredMixin, CreateView):
     """
     Create a purchase
     """
     form_class = PurchaseCreateForm
     model = Purchase
-    success_url = '/'
+    success_url = '/purchases/'
 
     def form_valid(self, form):
-        # change redirect url
-        self.success_url = f"/purchases/{self.request.user.id}"
         # save form data to object, not to database
         purchase = form.save(commit=False)
         # add  a selected product to object purchase
@@ -119,22 +135,27 @@ class PurchaseCreate(CreateView):
                 purchase.save()
             else:
                 # Not enough money
-                pass
+                messages.error(self.request, 'Not enough money.')
+                return HttpResponseRedirect('/')
+
         else:
             # Not enough product
-            pass
+            messages.error(self.request, f'Not enough product. We have only'
+                                         f' {purchase.product.count} on stock')
+            return HttpResponseRedirect("/")
 
         return super().form_valid(form=form)
 
 
-class ReturnCreate(CreateView):
+class ReturnCreate(LoginRequiredMixin, CreateView):
+    """
+    Create return
+    """
     form_class = ReturnCreateForm
     model = Return
-    success_url = '/'
+    success_url = '/purchases/'
 
     def form_valid(self, form):
-        # change redirect url
-        self.success_url = f"/purchases/{self.request.user.id}"
         # save form data to object, not to database
         purchase_return = form.save(commit=False)
         # get the purchase object
@@ -148,20 +169,26 @@ class ReturnCreate(CreateView):
         if now < purchase_time + timedelta(minutes=3):
             # save object
             purchase_return.save()
+            messages.success(self.request, 'Purchase return request sent.')
             return super().form_valid(form=form)
         else:
             # Purchase too old. No return possible.
-            pass
+            messages.error(self.request,
+                           'Purchase too old. No return possible.')
+            return HttpResponseRedirect(self.success_url)
 
 
-class ReturnApprove(DeleteView):
+class ReturnApprove(LoginRequiredMixin, DeleteView):
+    """
+    Admin approve return
+    """
     model = Return
     success_url = '/returns/'
 
     def delete(self, request, *args, **kwargs):
         """
-        Call the delete() method on the fetched object and then redirect to the
-        success URL.
+        Call delete() method on the fetched object and
+        then redirect to the success URL.
         """
         purchase_return = self.get_object()
         purchase = purchase_return.purchase
@@ -182,7 +209,10 @@ class ReturnApprove(DeleteView):
             return HttpResponseRedirect('/')
 
 
-class ReturnCancel(DeleteView):
+class ReturnCancel(LoginRequiredMixin, DeleteView):
+    """
+    Cancel return
+    """
     model = Return
     template_name = 'base.html'
     success_url = '/returns/'
