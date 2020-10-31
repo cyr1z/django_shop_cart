@@ -52,7 +52,11 @@
                 <tbody>
                 {% for product in product_list %}
                     <tr>
-                        <td>{{ product.preview }}</td>
+                        <td>{% if product.preview %}
+                            {{ product.preview }}
+                        {% else %}
+                            <img src="/static/product.png"  height="200">
+                        {% endif %}</td>
                         <td>{{ product.title }}</td>
                         <td>{{ product.description }}</td>
                         <td>{{ product.real_price }}</td>

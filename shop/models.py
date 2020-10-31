@@ -45,7 +45,9 @@ class Product(models.Model):
         blank=True
     )
     image = models.ImageField(
+        verbose_name='Image',
         upload_to='static/products_images',
+        default='static/product.png',
         null=True,
         blank=True
     )

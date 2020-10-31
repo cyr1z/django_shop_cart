@@ -23,6 +23,8 @@ class SignUpForm(UserCreationForm):
 
 
 class ProductCreateForm(ModelForm):
+    # image = forms.ImageField(required=False, help_text='Optional.')
+
     class Meta:
         model = Product
         fields = ['title', 'description', 'image', 'price', 'count']

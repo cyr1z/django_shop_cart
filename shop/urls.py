@@ -4,6 +4,8 @@ from shop.views import ProductListView, PurchaseListView, ReturnCreate, \
     ReturnListView, UserLogin, UserLogout, ProductCreate, PurchaseCreate, \
     ProductUpdate, Register, ReturnApprove, ReturnCancel
 
+
+
 urlpatterns = [
     path('', ProductListView.as_view(), name='products'),
     path('purchases/', PurchaseListView.as_view(), name='purchases'),

@@ -5,7 +5,7 @@
 <div class="card-body">
     <h5>Product</h5>
     <div>{{ preview }}</div>
-    <form method="post">
+    <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
          {{ form|crispy }}
 
