@@ -29,7 +29,6 @@ class Register(CreateView):
     template_name = "register.html"
 
 
-@method_decorator(login_required, name='dispatch')
 class UserLogout(LoginRequiredMixin, LogoutView):
     """ Logout """
     next_page = '/'
