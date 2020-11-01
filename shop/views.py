@@ -1,9 +1,11 @@
 from datetime import timedelta
 
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.utils import timezone
 from django.http import HttpResponseRedirect
+from django.utils.decorators import method_decorator
 from django.utils.safestring import mark_safe
 from django.views.generic import ListView, CreateView, \
     UpdateView, DeleteView
@@ -12,6 +14,7 @@ from django.contrib.auth.views import LoginView, LogoutView
 from shop.forms import SignUpForm, ProductCreateForm, PurchaseCreateForm, \
     ReturnCreateForm
 from shop.models import Product, Purchase, Return
+from shop.decorators import super_user_required
 
 
 class UserLogin(LoginView):
@@ -26,6 +29,7 @@ class Register(CreateView):
     template_name = "register.html"
 
 
+@method_decorator(login_required, name='dispatch')
 class UserLogout(LoginRequiredMixin, LogoutView):
     """ Logout """
     next_page = '/'
@@ -48,6 +52,7 @@ class ProductListView(ListView):
         return context
 
 
+@method_decorator(super_user_required, name='dispatch')
 class ProductCreate(LoginRequiredMixin, CreateView):
     """
     Create products. Only for administrators.
@@ -58,6 +63,7 @@ class ProductCreate(LoginRequiredMixin, CreateView):
     success_url = '/'
 
 
+@method_decorator(super_user_required, name='dispatch')
 class ProductUpdate(LoginRequiredMixin, UpdateView):
     """
     Update products. Only for administrators.
@@ -77,6 +83,7 @@ class ProductUpdate(LoginRequiredMixin, UpdateView):
         return context
 
 
+@method_decorator(login_required, name='dispatch')
 class PurchaseListView(LoginRequiredMixin, ListView):
     """
     List of user purchases
@@ -96,6 +103,7 @@ class PurchaseListView(LoginRequiredMixin, ListView):
         return context
 
 
+@method_decorator(super_user_required, name='dispatch')
 class ReturnListView(LoginRequiredMixin, ListView):
     """
     Returns list. Only for administrators.
@@ -105,7 +113,15 @@ class ReturnListView(LoginRequiredMixin, ListView):
     template_name = 'return_list.html'
     queryset = Return.objects.all()
 
+    def get(self, request, *args, **kwargs):
+        if self.request.user.is_superuser:
+            return super(ReturnListView, self).get(self, request, *args,
+                                                   **kwargs)
+        else:
+            return HttpResponseRedirect('/')
 
+
+@method_decorator(login_required, name='dispatch')
 class PurchaseCreate(LoginRequiredMixin, CreateView):
     """
     Create a purchase
@@ -147,6 +163,7 @@ class PurchaseCreate(LoginRequiredMixin, CreateView):
         return super().form_valid(form=form)
 
 
+@method_decorator(login_required, name='dispatch')
 class ReturnCreate(LoginRequiredMixin, CreateView):
     """
     Create return
@@ -178,6 +195,7 @@ class ReturnCreate(LoginRequiredMixin, CreateView):
             return HttpResponseRedirect(self.success_url)
 
 
+@method_decorator(super_user_required, name='dispatch')
 class ReturnApprove(LoginRequiredMixin, DeleteView):
     """
     Admin approve return
@@ -209,6 +227,7 @@ class ReturnApprove(LoginRequiredMixin, DeleteView):
             return HttpResponseRedirect('/')
 
 
+@method_decorator(super_user_required, name='dispatch')
 class ReturnCancel(LoginRequiredMixin, DeleteView):
     """
     Cancel return
