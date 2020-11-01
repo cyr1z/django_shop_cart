@@ -42,7 +42,6 @@
                     <td>
                         <form method="POST" action="{% url 'return' %}">
                             {% csrf_token %}
-                            {{ form|crispy }}
                             <input type="hidden" name="purchase_id"
                                    value="{{ purchase.id }}">
                             <button type="submit" class="btn btn-danger">

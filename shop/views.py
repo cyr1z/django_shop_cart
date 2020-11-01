@@ -95,12 +95,6 @@ class PurchaseListView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         return Purchase.objects.filter(user=self.request.user)
 
-    # add return creation form to context
-    def get_context_data(self, *, object_list=None, **kwargs):
-        context = super().get_context_data(object_list=object_list, **kwargs)
-        context.update({'form': ReturnCreateForm})
-        return context
-
 
 @method_decorator(super_user_required, name='dispatch')
 class ReturnListView(LoginRequiredMixin, ListView):
@@ -111,13 +105,6 @@ class ReturnListView(LoginRequiredMixin, ListView):
     paginate_by = 10
     template_name = 'return_list.html'
     queryset = Return.objects.all()
-
-    def get(self, request, *args, **kwargs):
-        if self.request.user.is_superuser:
-            return super(ReturnListView, self).get(self, request, *args,
-                                                   **kwargs)
-        else:
-            return HttpResponseRedirect('/')
 
 
 @method_decorator(login_required, name='dispatch')
@@ -152,7 +139,6 @@ class PurchaseCreate(LoginRequiredMixin, CreateView):
                 # Not enough money
                 messages.error(self.request, 'Not enough money.')
                 return HttpResponseRedirect('/')
-
         else:
             # Not enough product
             messages.error(self.request, f'Not enough product. We have only'
@@ -220,10 +206,7 @@ class ReturnApprove(LoginRequiredMixin, DeleteView):
         return HttpResponseRedirect(self.success_url)
 
     def get(self, request, *args, **kwargs):
-        if self.request.user.is_superuser:
-            return self.delete(request, *args, **kwargs)
-        else:
-            return HttpResponseRedirect('/')
+        return self.delete(request, *args, **kwargs)
 
 
 @method_decorator(super_user_required, name='dispatch')
@@ -236,7 +219,4 @@ class ReturnCancel(LoginRequiredMixin, DeleteView):
     success_url = '/returns/'
 
     def get(self, request, *args, **kwargs):
-        if self.request.user.is_superuser:
-            return self.delete(request, *args, **kwargs)
-        else:
-            return HttpResponseRedirect('/')
+        return self.delete(request, *args, **kwargs)

@@ -18,7 +18,7 @@
                 <td>{{ return.purchase.cost }}</td>
                 <td>{{ return.purchase.user.full_name }}</td>
                 <td>{{ return.created_at }}</td>
-                <td>
+                <td style="width:22%">
                     <a type="button" class="btn btn-success" href="{% url 'approve' return.id %}">Approve</a>
                     <a type="button" class="btn btn-danger" href="{% url 'cancel' return.id %}">Cancel</a>
                 </td>

@@ -19,7 +19,6 @@ class ShopUser(AbstractUser):
         return '$' + "{:.2f}".format(self.purse / 100)
 
     class Meta:
-        ordering = ["first_name", "last_name"]
         unique_together = ["first_name", "last_name"]
         verbose_name = 'User'
         verbose_name_plural = 'Users'
