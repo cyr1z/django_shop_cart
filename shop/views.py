@@ -3,7 +3,6 @@ from datetime import timedelta
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.urls import reverse
 from django.utils import timezone
 from django.http import HttpResponseRedirect
 from django.utils.decorators import method_decorator

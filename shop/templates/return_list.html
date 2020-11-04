@@ -1,42 +1,50 @@
 {% extends "base.html" %}
 {% block content %}
-<script>
-function change(){
-	document.getElementById("act").value = 'reject';
-}
-</script>
-<div class="card-body">
-    <h4>Return List</h4>
-    <table class="table">
-        <thead>
+    <script>
+        function change() {
+            document.getElementById("act").value = 'reject';
+        }
+    </script>
+    <div class="card-body">
+        <h4>Return List</h4>
+        <table class="table">
+            <thead>
             <tr>
-                <th scope="col">Title</th><th scope="col">Count</th>
-                <th scope="col">Cost</th><th scope="col">user</th>
-                <th scope="col">created at</th><th scope="col">Action</th>
+                <th scope="col">Title</th>
+                <th scope="col">Count</th>
+                <th scope="col">Cost</th>
+                <th scope="col">user</th>
+                <th scope="col">created at</th>
+                <th scope="col">Action</th>
             </tr>
-        </thead>
-        <tbody>
+            </thead>
+            <tbody>
             {% for return in return_list %}
-            <tr>
-                <td>{{ return.purchase.product.title }} ({{ return.purchase.product.real_price }})</td>
-                <td>{{ return.purchase.count }}</td>
-                <td>{{ return.purchase.cost }}</td>
-                <td>{{ return.purchase.user.full_name }}</td>
-                <td>{{ return.created_at }}</td>
-                <td style="width:22%">
-                    <form method="POST" action="{% url "manage"  return.id%}">
-                     {% csrf_token %}
-                        <input type="hidden" name="pk" value="{{ return.id }}">
-                        <input type="hidden" name="act" id="act" value="approve">
-                        <button type="submit"  type="button" class="btn btn-success">Approve</button>
-                        <button type="submit"  type="button" class="btn btn-danger"
-                                onclick="document.getElementById('act').value = 'reject';">Reject</button>
-                    </form>
-                </td>
-            </tr>
+                <tr>
+                    <td>{{ return.purchase.product.title }}
+                        ({{ return.purchase.product.real_price }})
+                    </td>
+                    <td>{{ return.purchase.count }}</td>
+                    <td>{{ return.purchase.cost }}</td>
+                    <td>{{ return.purchase.user.full_name }}</td>
+                    <td>{{ return.created_at }}</td>
+                    <td style="width:22%">
+                        <form method="POST"
+                              action="{% url "manage"  return.id %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="pk"
+                                   value="{{ return.id }}">
+                            <input type="hidden" name="act" id="act"  value="approve">
+                            <button type="submit" type="button" class="btn btn-success">Approve</button>
+                            <button type="submit" type="button" class="btn btn-danger"
+                                    onclick="document.getElementById('act').value = 'reject';">
+                                Reject
+                            </button>
+                        </form>
+                    </td>
+                </tr>
             {% endfor %}
-        </tbody>
-    </table>
-{#    <a type="button" class="btn btn-success" href="{%url 'book-create' %}">Create</a>#}
-</div>
+            </tbody>
+        </table>
+    </div>
 {% endblock %}
