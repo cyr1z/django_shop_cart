@@ -1,5 +1,10 @@
 {% extends "base.html" %}
 {% block content %}
+<script>
+function change(){
+	document.getElementById("act").value = 'reject';
+}
+</script>
 <div class="card-body">
     <h4>Return List</h4>
     <table class="table">
@@ -19,8 +24,14 @@
                 <td>{{ return.purchase.user.full_name }}</td>
                 <td>{{ return.created_at }}</td>
                 <td style="width:22%">
-                    <a type="button" class="btn btn-success" href="{% url 'approve' return.id %}">Approve</a>
-                    <a type="button" class="btn btn-danger" href="{% url 'cancel' return.id %}">Cancel</a>
+                    <form method="POST" action="{% url "manage"  return.id%}">
+                     {% csrf_token %}
+                        <input type="hidden" name="pk" value="{{ return.id }}">
+                        <input type="hidden" name="act" id="act" value="approve">
+                        <button type="submit"  type="button" class="btn btn-success">Approve</button>
+                        <button type="submit"  type="button" class="btn btn-danger"
+                                onclick="document.getElementById('act').value = 'reject';">Reject</button>
+                    </form>
                 </td>
             </tr>
             {% endfor %}

@@ -3,6 +3,7 @@ from datetime import timedelta
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.urls import reverse
 from django.utils import timezone
 from django.http import HttpResponseRedirect
 from django.utils.decorators import method_decorator
@@ -188,35 +189,25 @@ class ReturnApprove(LoginRequiredMixin, DeleteView):
     model = Return
     success_url = '/returns/'
 
-    def delete(self, request, *args, **kwargs):
-        """
-        Call delete() method on the fetched object and
-        then redirect to the success URL.
-        """
-        purchase_return = self.get_object()
-        purchase = purchase_return.purchase
-        user = purchase.user
-        user.purse += purchase.cost_in_cents
-        product = purchase.product
-        product.count += purchase.count
-        user.save()
-        product.save()
-        purchase.delete()
-        purchase_return.delete()
-        return HttpResponseRedirect(self.success_url)
-
-    def get(self, request, *args, **kwargs):
-        return self.delete(request, *args, **kwargs)
-
 
 @method_decorator(super_user_required, name='dispatch')
-class ReturnCancel(LoginRequiredMixin, DeleteView):
+class ReturnManage(LoginRequiredMixin, DeleteView):
     """
-    Cancel return
+    Admin approve or reject =return
     """
     model = Return
-    template_name = 'base.html'
     success_url = '/returns/'
 
-    def get(self, request, *args, **kwargs):
-        return self.delete(request, *args, **kwargs)
+    def delete(self, request, *args, **kwargs):
+        purchase_return = self.get_object()
+        if self.request.POST['act'] == 'approve':
+            purchase = purchase_return.purchase
+            user = purchase.user
+            user.purse += purchase.cost_in_cents
+            product = purchase.product
+            product.count += purchase.count
+            user.save()
+            product.save()
+            purchase.delete()
+        purchase_return.delete()
+        return HttpResponseRedirect(self.success_url)
