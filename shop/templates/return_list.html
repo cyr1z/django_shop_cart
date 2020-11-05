@@ -33,8 +33,8 @@
                               action="{% url "manage"  return.id %}">
                             {% csrf_token %}
                             <input type="hidden" name="act" id="act" value="approve">
-                            <button type="submit" type="button" class="btn btn-success">Approve</button>
-                            <button type="submit" type="button" class="btn btn-danger"
+                            <button type="submit" class="btn btn-success">Approve</button>
+                            <button type="submit" class="btn btn-danger"
                                     onclick="document.getElementById('act').value = 'reject';">
                                 Reject
                             </button>
